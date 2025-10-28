@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Jogo Estilo HaxBall</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #101820;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        header {
+            background: #0b0b0b;
+            display: flex;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            padding: 10px;
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: white;
+            margin: 0;
+        }
+
+        .scoreboard-wrapper {
+            background: #0b0b0b;
+            padding: 10px 50px;
+            margin-bottom: 20px;
+        }
+
+        .scoreboard {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            color: white;
+            font-size: 28px;
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            width: 300px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .team {
+            padding: 8px 25px;
+            border-radius: 8px;
+            color: white;
+        }
+
+        .team.red {
+            background-color: #c44141;
+            box-shadow: 0 0 10px #c44141;
+        }
+
+        .team.blue {
+            background-color: #3b76c4;
+            box-shadow: 0 0 10px #3b76c4;
+        }
+
+        .timer {
+            color: #fff;
+        }
+
+        canvas {
+            border: 2px solid #444;
+            background-color: #0b0b0b;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>New HaxBall</h1>
+    </header>
+    <div class="scoreboard-wrapper">
+        <div class="scoreboard">
+            <div class="team red">
+                <span class="score" id="red-score">0</span>
+            </div>
+            <div class="timer" id="timer">00:00</div>
+            <div class="team blue">
+                <span class="score" id="blue-score">0</span>
+            </div>
+        </div>
+    </div>
+    <canvas id="game" width="960" height="540"></canvas>
+
+    <!-- Scripts principais -->
+    <script type="module" src="./main.js"></script>
+</body>
+
+</html>
