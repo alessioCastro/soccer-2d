@@ -3,28 +3,43 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Jogo Estilo HaxBall</title>
+    <meta name="viewport" content="width=1200, initial-scale=0.2">
+    <title>New HaxBall</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --red-team-color: #e74c3c;
+            --blue-team-color: #3498db;
+            --background-dark: #101820;
+            --surface-color: #1a222c;
+            --text-color: #ecf0f1;
+            --border-color: #444;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
         body {
-            margin: 0;
-            background-color: #101820;
+            background-color: var(--background-dark);
+            color: var(--text-color);
+            height: 100dvh;
+            overflow: hidden;
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            margin: 0;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         header {
-            background: #0b0b0b;
+            background: var(--surface-color);
             display: flex;
             align-items: center;
-            position: fixed;
-            top: 0;
-            left: 0;
             padding: 10px;
-            width: 100%;
         }
 
         h1 {
@@ -33,69 +48,205 @@
             margin: 0;
         }
 
+        .game-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 20px;
+            width: 100%;
+            padding: 20px;
+        }
+        
+        .team-panel {
+            background: var(--surface-color);
+            border-radius: 12px;
+            padding: 20px;
+            width: 220px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .team-panel h2 {
+            margin-top: 0;
+            font-size: 20px;
+            font-weight: 700;
+            padding-bottom: 10px;
+            border-bottom: 2px solid;
+        }
+
+        .team-panel.red-team h2 {
+            color: var(--red-team-color);
+            border-bottom-color: var(--red-team-color);
+        }
+        
+        .team-panel.blue-team h2 {
+            color: var(--blue-team-color);
+            border-bottom-color: var(--blue-team-color);
+        }
+
+        .player-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .player-list li {
+            background-color: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .main-content {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
         .scoreboard-wrapper {
-            background: #0b0b0b;
-            padding: 10px 50px;
+            background: linear-gradient(145deg, #1f2a37, #1a222c);
+            padding: 12px;
+            border-radius: 12px;
             margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
         }
 
         .scoreboard {
             display: flex;
             align-items: center;
-            justify-content: space-around;
+            justify-content: space-between;
             color: white;
-            font-size: 28px;
-            font-family: 'Arial', sans-serif;
-            font-weight: bold;
-            width: 300px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            font-size: 32px;
+            font-weight: 700;
+            width: 350px;
         }
 
         .team {
-            padding: 8px 25px;
+            padding: 10px 30px;
             border-radius: 8px;
             color: white;
+            transition: all 0.3s ease;
         }
 
         .team.red {
-            background-color: #c44141;
-            box-shadow: 0 0 10px #c44141;
+            background-color: var(--red-team-color);
+            box-shadow: 0 0 15px var(--red-team-color);
         }
 
         .team.blue {
-            background-color: #3b76c4;
-            box-shadow: 0 0 10px #3b76c4;
+            background-color: var(--blue-team-color);
+            box-shadow: 0 0 15px var(--blue-team-color);
         }
 
         .timer {
-            color: #fff;
+            color: var(--text-color);
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
         }
 
         canvas {
-            border: 2px solid #444;
+            border: 2px solid var(--border-color);
             background-color: #0b0b0b;
+            border-radius: 8px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
         }
+        
+        #goal-notification {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            font-size: 100px;
+            font-weight: 700;
+            color: #fff;
+            text-shadow: 0 0 10px #ffdd00, 0 0 20px #ffdd00, 0 0 40px #ffdd00;
+            opacity: 0;
+            transition: all 0.5s ease;
+            pointer-events: none;
+        }
+
+        #goal-notification.visible {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        footer {
+            background: var(--surface-color);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.3);
+            margin-top: auto;
+        }
+
+        .footer-btn {
+            background: none;
+            border: 2px solid var(--text-color);
+            color: var(--text-color);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .footer-btn:hover {
+            background: var(--text-color);
+            color: var(--background-dark);
+        }
+
     </style>
 </head>
 
 <body>
+
     <header>
         <h1>New HaxBall</h1>
     </header>
-    <div class="scoreboard-wrapper">
-        <div class="scoreboard">
-            <div class="team red">
-                <span class="score" id="red-score">0</span>
-            </div>
-            <div class="timer" id="timer">00:00</div>
-            <div class="team blue">
-                <span class="score" id="blue-score">0</span>
-            </div>
-        </div>
-    </div>
-    <canvas id="game" width="960" height="540"></canvas>
 
-    <!-- Scripts principais -->
+    <div class="game-container">
+        <aside class="team-panel red-team">
+            <h2>Red Team</h2>
+            <ul class="player-list" id="red-team-players">
+                <li>Player 1</li>
+                <li>Player 2</li>
+            </ul>
+        </aside>
+
+        <main class="main-content">
+            <div class="scoreboard-wrapper">
+                <div class="scoreboard">
+                    <div class="team red">
+                        <span class="score" id="red-score">0</span>
+                    </div>
+                    <div class="timer" id="timer">00:00</div>
+                    <div class="team blue">
+                        <span class="score" id="blue-score">0</span>
+                    </div>
+                </div>
+            </div>
+            <canvas id="game" width="960" height="540"></canvas>
+            <div id="goal-notification">GOAL!</div>
+        </main>
+        
+        <aside class="team-panel blue-team">
+            <h2>Blue Team</h2>
+            <ul class="player-list" id="blue-team-players">
+                <li>Player 3</li>
+                <li>Player 4</li>
+            </ul>
+        </aside>
+    </div>
+
+    <footer>
+        <button class="footer-btn">Settings</button>
+        <button class="footer-btn">Full Screen</button>
+    </footer>
+
     <script type="module" src="./main.js"></script>
 </body>
 
