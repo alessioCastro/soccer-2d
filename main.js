@@ -12,22 +12,12 @@ const canvas = document.getElementById('game');
 const scene = new Scene({
     canvas,
     onScore: ({ scorer }) => {
-        if (goalScored) return;
-        const h1 = document.querySelector('h1');
-        h1.textContent = `GOL!`;
-        //console.log(`Ponto! Marcador: ${scorer.entity?.name ?? scorer.entity?.id ?? 'desconhecido'}`);
-        goalScored = true;
-        // Exemplo: reset bola
         setTimeout(() => {
-            h1.textContent = 'New HaxBall';
-
             ball.shape.position = { x: canvas.width / 2, y: canvas.height / 2 };
             ball.velocity = { x: 0, y: 0 };
 
             player.shape.position = { x: canvas.width / 2 - 120, y: canvas.height / 2 };
             player.velocity = { x: 0, y: 0 };
-            
-            goalScored = false;
         }, 2000);
     }
 });
@@ -71,9 +61,14 @@ const goalLeft = scene.add(new Body({
 }), { entity: new Entity({ name: 'GoalLeft', tags: ['goal'] }) });
 
 const goalRight = scene.add(new Body({
-    shape: new Line({ start: vec(canvas.width - margin - 20, canvas.height / 2 - 60), end: vec(canvas.width - margin - 20, canvas.height / 2 + 60), thickness: 6 }),
+    shape: new Rect({ position: vec(canvas.width - margin - 20, canvas.height / 2), width: 0, height: 120 }),
     hasPhysics: false, isSensor: true, collisionGroup: 'goals', collidesWith: [], canCollideWithTypes: ['circle'],
 }), { entity: new Entity({ name: 'GoalRight', tags: ['goal'] }) });
+
+/*const goalRight = scene.add(new Body({
+    shape: new Line({ start: vec(canvas.width - margin - 20, canvas.height / 2 - 60), end: vec(canvas.width - margin - 20, canvas.height / 2 + 60), thickness: 6 }),
+    hasPhysics: false, isSensor: true, collisionGroup: 'goals', collidesWith: [], canCollideWithTypes: ['circle'],
+}), { entity: new Entity({ name: 'GoalRight', tags: ['goal'] }) });*/
 
 scene.buildStaticLayer();
 
