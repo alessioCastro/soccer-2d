@@ -8,16 +8,40 @@ export class Scene {
     constructor({ canvas, onScore = () => { } }) {
         this.renderer = new CanvasRenderer(canvas);
         this.bodies = [];
+        this.scoredContacts = new Set();
+
         this.cm = new CollisionManager({
             cell: 64,
             onSensorContact: (a, b, manifold) => {
-                // se um dos dois é sensor e o outro tem tag 'scorable'
                 const sensor = a.isSensor ? a : b.isSensor ? b : null;
                 const scorable = a.entity?.tags?.has('scorable') ? a :
                     b.entity?.tags?.has('scorable') ? b : null;
 
                 if (sensor && scorable) {
-                    onScore({ scorer: scorable, manifold });
+                    const key = sensor.entity.name + ':' + scorable.entity.id;
+                    if (!this.scoredContacts.has(key)) {
+                        const redScore = document.querySelector('#red-score');
+                        const blueScore = document.querySelector('#blue-score');
+                        const eventText = document.querySelector('#event-text');
+
+                        if (sensor.entity.name == 'GoalLeft') {
+                            blueScore.textContent = parseInt(blueScore.textContent) + 1;
+                        } else if (sensor.entity.name == 'GoalRight') {
+                            redScore.textContent = parseInt(redScore.textContent) + 1;
+                        }
+
+                        eventText.textContent = 'GOAL!';
+                        eventText.hidden = false;
+
+                        onScore({ scorer: scorable, manifold });
+
+                        setTimeout(() => {
+                            eventText.hidden = true;
+                            this.scoredContacts.delete(key);
+                        }, 2000);
+
+                        this.scoredContacts.add(key);
+                    }
                 }
             }
         });
