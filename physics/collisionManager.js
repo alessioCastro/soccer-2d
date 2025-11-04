@@ -1,5 +1,5 @@
 // physics/collisionManager.js
-import { vec, add, sub, dot, length, clamp } from '../utils/math.js';
+import { vec, add, sub, dot, length, clamp, cross } from '../utils/math.js';
 import { collideCirclePolygon, collidePolygonPolygon } from './satColliders.js';
 
 export class CollisionManager {
@@ -45,7 +45,7 @@ export class CollisionManager {
                     // sensor: dispara evento e não resolve
                     if (a.isSensor || b.isSensor) {
                         this.onSensorContact(a, b, m);
-                    
+
                         // só resolve fisicamente se o sensor explicitamente colide
                         if (a.collidesWith.has(b.collisionGroup) && b.hasPhysics) {
                             resolveCollision(a, b, m);
@@ -75,19 +75,23 @@ export class CollisionManager {
             }
             return true;
         }
-    
+
         // caso normal (não sensores)
         if (!a.collidesWith.has(b.collisionGroup)) return false;
         if (!b.collidesWith.has(a.collisionGroup)) return false;
         if (!a.canCollideWithTypes.has(b.shape.type)) return false;
         if (!b.canCollideWithTypes.has(a.shape.type)) return false;
         return true;
-    }    
+    }
 }
 
 // ---------- Narrow-phase e utilitários ----------
 
-function pairId(a, b) { return a.shape.position.x <= b.shape.position.x ? `${a.entity?.id}-${b.entity?.id}` : `${b.entity?.id}-${a.entity?.id}`; }
+function pairId(a, b) {
+    const idA = a._id;
+    const idB = b._id;
+    return idA < idB ? `${idA}-${idB}` : `${idB}-${idA}`;
+}
 
 function computeAABB(shape) {
     const sw = (shape.strokeWidth ?? 0) / 2; // 👈 metade do stroke
@@ -224,6 +228,17 @@ function collideCircleRect(circle, rect) {
     return { normal, penetration, contactPoint: contact };
 }
 
+// impulso angular
+function applyAngularImpulse(body, impulse, contactPoint) {
+    if (!body.hasPhysics || body.invInertia === 0) return;
+    const r = sub(contactPoint, body.shape.position);
+    const torque = cross(r, impulse);
+
+    // fator de suavização para não girar surreal
+    const torqueFactor = 0.3;
+    body.angularVelocity += torque * body.invInertia * torqueFactor;
+}
+
 function resolveCollision(a, b, m) {
     if (!a.hasPhysics && !b.hasPhysics) return;
 
@@ -288,4 +303,7 @@ function resolveCollision(a, b, m) {
         b.velocity.x += impulse.x * b.invMass;
         b.velocity.y += impulse.y * b.invMass;
     }
+
+    if (a.hasPhysics) applyAngularImpulse(a, { x: -impulse.x, y: -impulse.y }, m.contactPoint);
+    if (b.hasPhysics) applyAngularImpulse(b, impulse, m.contactPoint);
 }
