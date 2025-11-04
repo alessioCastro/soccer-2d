@@ -8,7 +8,7 @@ export class Scene {
     constructor({ canvas, onScore = () => { } }) {
         this.renderer = new CanvasRenderer(canvas);
         this.bodies = [];
-        this.scoredContacts = new Set();
+        this.hasScored = false;
 
         this.cm = new CollisionManager({
             cell: 64,
@@ -17,31 +17,29 @@ export class Scene {
                 const scorable = a.entity?.tags?.has('scorable') ? a :
                     b.entity?.tags?.has('scorable') ? b : null;
 
-                if (sensor && scorable) {
-                    const key = sensor.entity.name + ':' + scorable.entity.id;
-                    if (!this.scoredContacts.has(key)) {
-                        const redScore = document.querySelector('#red-score');
-                        const blueScore = document.querySelector('#blue-score');
-                        const eventText = document.querySelector('#event-text');
+                if (!this.hasScored && sensor && scorable) {
+                    const redScore = document.querySelector('#red-score');
+                    const blueScore = document.querySelector('#blue-score');
+                    const eventText = document.querySelector('#event-text');
 
-                        if (sensor.entity.name == 'GoalLeft') {
-                            blueScore.textContent = parseInt(blueScore.textContent) + 1;
-                        } else if (sensor.entity.name == 'GoalRight') {
-                            redScore.textContent = parseInt(redScore.textContent) + 1;
-                        }
-
-                        eventText.textContent = 'GOAL!';
-                        eventText.hidden = false;
-
-                        onScore({ scorer: scorable, manifold });
-
-                        setTimeout(() => {
-                            eventText.hidden = true;
-                            this.scoredContacts.delete(key);
-                        }, 2000);
-
-                        this.scoredContacts.add(key);
+                    if (sensor.entity.name == 'GoalLeft') {
+                        blueScore.textContent = parseInt(blueScore.textContent) + 1;
+                    } else if (sensor.entity.name == 'GoalRight') {
+                        redScore.textContent = parseInt(redScore.textContent) + 1;
                     }
+
+                    eventText.textContent = 'GOAL!';
+                    eventText.style.opacity = 1;
+
+                    onScore({ scorer: scorable, manifold });
+
+                    setTimeout(() => {
+                        eventText.style.opacity = 0;
+                        this.resetDynamicBodies();
+                        this.hasScored = false;
+                    }, 2000);
+
+                    this.hasScored = true;
                 }
             }
         });
@@ -68,18 +66,41 @@ export class Scene {
         this.staticDirty = true;
     }
 
+    resetDynamicBodies() {
+        for (const b of this.dynamicBodies) {
+            if (b.initialPosition) {
+                b.shape.position.x = b.initialPosition.x;
+                b.shape.position.y = b.initialPosition.y;
+                b.prevPosition = { ...b.initialPosition };
+            }
+            // zera velocidades se existirem
+            if (b.velocity) {
+                b.velocity.x = 0;
+                b.velocity.y = 0;
+            }
+            if (b.angularVelocity !== undefined) {
+                b.angularVelocity = 0;
+            }
+        }
+    }    
+
     add(body, meta = { entity: null }) {
         if (meta.entity) body.entity = meta.entity;
         this.bodies.push(body);
-
+    
         if (!body.hasPhysics && !body.isSensor) {
             this.staticBodies.push(body);
             this.staticDirty = true; // precisa rebuild
         } else {
+            // salva posição inicial
+            body.initialPosition = { 
+                x: body.shape.position.x, 
+                y: body.shape.position.y 
+            };
             this.dynamicBodies.push(body);
         }
         return body;
-    }
+    }    
 
     remove(body) {
         // remove da lista geral
