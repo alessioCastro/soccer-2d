@@ -1,6 +1,8 @@
 // physics/body.js
 import { vec, add } from '../utils/math.js';
 
+let BODY_ID_COUNTER = 0;
+
 export class Body {
     constructor({
         shape,
@@ -13,8 +15,10 @@ export class Body {
         isSensor = false,
         collisionGroup = 'default',
         collidesWith = ['default', 'players', 'ball', 'walls'],
-        canCollideWithTypes = ['circle', 'rect', 'triangle', 'line']
+        canCollideWithTypes = ['circle', 'rect', 'triangle', 'line'],
+        canRotate = false
     }) {
+        this._id = BODY_ID_COUNTER++;
         this.shape = shape;
         this.mass = hasPhysics ? Math.max(0.0001, mass) : 0;
         this.invMass = this.mass > 0 ? 1 / this.mass : 0;
@@ -29,7 +33,20 @@ export class Body {
         this.canCollideWithTypes = new Set(canCollideWithTypes);
         this.force = vec();
 
-        // 🔑 posição anterior para interpolação
+        // 🔑 novo
+        this.canRotate = canRotate;
+
+        // 🔑 Momento de inércia
+        if (shape.type === 'circle') {
+            this.inertia = 0.5 * this.mass * shape.radius * shape.radius;
+        } else if (shape.type === 'rect') {
+            this.inertia = (1/12) * this.mass * (shape.width**2 + shape.height**2);
+        } else {
+            this.inertia = this.mass * 100; // fallback
+        }
+        this.invInertia = this.inertia > 0 ? 1 / this.inertia : 0;        
+
+        // posição anterior para interpolação
         this.prevPosition = { ...this.shape.position };
     }
 
@@ -41,4 +58,10 @@ export class Body {
         this.invMass = this.mass > 0 ? 1 / this.mass : 0;
     }
     setSensor(v) { this.isSensor = v; }
+
+    // 👇 novo: liga/desliga rotação
+    setRotationEnabled(v) {
+        this.canRotate = v;
+        if (!v) this.angularVelocity = 0; // garante que pare
+    }
 }
