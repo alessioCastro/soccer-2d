@@ -13,16 +13,11 @@ const scene = new Scene({
     canvas,
     onScore: ({ scorer }) => {
         setTimeout(() => {
-            ball.shape.position = { x: canvas.width / 2, y: canvas.height / 2 };
-            ball.velocity = { x: 0, y: 0 };
-
-            player.shape.position = { x: canvas.width / 2 - 120, y: canvas.height / 2 };
-            player.velocity = { x: 0, y: 0 };
-        }, 2000);
+            /*player.shape.position = { x: canvas.width / 2 - 220, y: canvas.height / 2 };
+            player.velocity = { x: 0, y: 0 };*/
+        }, 2001);
     }
 });
-
-let goalScored = false;
 
 // paredes (retângulos finos que contornam o campo)
 const margin = 12;
@@ -31,26 +26,46 @@ const fieldH = canvas.height - margin * 2;
 
 // top
 scene.add(new Body({
-    shape: new Rect({ position: vec(canvas.width / 2, margin), width: fieldW, height: 12, rotation: 0 }),
+    shape: new Rect({ position: vec(canvas.width / 2, margin), width: fieldW, height: 5, rotation: 0 }),
     renderStyle: { fill: '#fff', stroke: '#fff', fillAlpha: 0.02 },
-    hasPhysics: false, collisionGroup: 'walls', collidesWith: ['players', 'ball', 'walls']
+    hasPhysics: false, collisionGroup: 'walls', collidesWith: ['ball', 'walls']
 }));
 // bottom
 scene.add(new Body({
-    shape: new Rect({ position: vec(canvas.width / 2, canvas.height - margin), width: fieldW, height: 12 }),
+    shape: new Rect({ position: vec(canvas.width / 2, canvas.height - margin), width: fieldW, height: 5 }),
     renderStyle: { fill: '#fff', stroke: '#fff', fillAlpha: 0.02 },
-    hasPhysics: false, collisionGroup: 'walls', collidesWith: ['players', 'ball', 'walls']
+    hasPhysics: false, collisionGroup: 'walls', collidesWith: ['ball', 'walls']
 }));
 // left
 scene.add(new Body({
-    shape: new Rect({ position: vec(margin, canvas.height / 2), width: 12, height: fieldH }),
-    renderStyle: { fill: '#fff', stroke: '#fff', fillAlpha: 0.02 },
-    hasPhysics: false, collisionGroup: 'walls', collidesWith: ['players', 'ball', 'walls']
+    shape: new Rect({ position: vec(margin, canvas.height / 2), width: 5, height: fieldH }),
+    renderStyle: { fill: '#000', stroke: '#fff', fillAlpha: 0.02 },
+    hasPhysics: false, collisionGroup: 'walls', collidesWith: ['ball', 'walls']
 }));
 // right
 scene.add(new Body({
-    shape: new Rect({ position: vec(canvas.width - margin, canvas.height / 2), width: 12, height: fieldH }),
+    shape: new Rect({ position: vec(canvas.width - margin, canvas.height / 2), width: 5, height: fieldH }),
     renderStyle: { fill: '#fff', stroke: '#fff', fillAlpha: 0.02 },
+    hasPhysics: false, collisionGroup: 'walls', collidesWith: ['ball', 'walls']
+}));
+
+const goalPost = scene.add(new Body({
+    shape: new Circle({ position: vec(canvas.width / 2 - 448, canvas.height / 2 - 65), radius: 5, fill: '#e74c3c' }),
+    hasPhysics: false, collisionGroup: 'walls', collidesWith: ['players', 'ball', 'walls']
+}));
+
+const goalPost2 = scene.add(new Body({
+    shape: new Circle({ position: vec(canvas.width / 2 - 448, canvas.height / 2 + 65), radius: 5, fill: '#e74c3c' }),
+    hasPhysics: false, collisionGroup: 'walls', collidesWith: ['players', 'ball', 'walls']
+}));
+
+const goalPost3 = scene.add(new Body({
+    shape: new Circle({ position: vec(canvas.width / 2 + 448, canvas.height / 2 - 65), radius: 5, fill: '#3498db' }),
+    hasPhysics: false, collisionGroup: 'walls', collidesWith: ['players', 'ball', 'walls']
+}));
+
+const goalPost4 = scene.add(new Body({
+    shape: new Circle({ position: vec(canvas.width / 2 + 448, canvas.height / 2 + 65), radius: 5, fill: '#3498db' }),
     hasPhysics: false, collisionGroup: 'walls', collidesWith: ['players', 'ball', 'walls']
 }));
 
@@ -71,6 +86,14 @@ const goalRight = scene.add(new Body({
 }), { entity: new Entity({ name: 'GoalRight', tags: ['goal'] }) });*/
 
 scene.buildStaticLayer();
+
+const midLine = scene.add(new Body({
+    shape: new Line({ start: vec(canvas.width - 850, canvas.height / 2.3), end: vec(canvas.width - 120, canvas.height / 2.3), thickness: 6 }),
+    renderStyle: { fill: '#2e86ff', stroke: '#0b4a7f', strokeAlpha: 0.2 },
+    mass: 2, restitution: 0.3, friction: 0.99,
+    collisionGroup: 'walls', collidesWith: ['players', 'ball', 'walls'],
+    canCollideWithTypes: ['circle', 'rect', 'triangle', 'line']
+}));
 
 // círculo principal (azul-grená)
 const playerShape = new Circle({
@@ -108,9 +131,8 @@ const player = scene.add(new Body({
     shape: playerShape,
     mass: 5, restitution: 0.1, friction: 1,
     collisionGroup: 'players',
-    collidesWith: ['players', 'ball', 'walls', 'goals'],
-    canCollideWithTypes: ['circle', 'rect', 'triangle', 'line']
-}), { entity: new Entity({ name: 'Barcelona', tags: ['scorable'] }) });
+    collidesWith: ['players', 'ball', 'walls']
+}), { entity: new Entity({ name: 'Barcelona' }) });
 
 // carregar imagem (pode ser PNG ou SVG)
 const crestImg = new Image();
@@ -125,31 +147,73 @@ crestImg.onload = () => {
 };
 
 const opponent = scene.add(new Body({
-    shape: new Rect({ position: vec(canvas.width / 2 + 120, canvas.height / 2), width: 40, height: 40 }),
-    renderStyle: { fill: '#2e86ff', stroke: '#0b4a7f' },
+    shape: new Rect({ position: vec(canvas.width / 2 + 120, canvas.height / 2), width: 40, height: 40, fill: '#2e86ff', stroke: '#0b4a7f' }),
     mass: 1, restitution: 0.3, friction: 1,
-    collisionGroup: 'players', collidesWith: ['players', 'ball', 'walls', 'goals'],
-    canCollideWithTypes: ['circle', 'rect', 'triangle', 'line']
-}), { entity: new Entity({ name: 'Vermelho', tags: ['scorable'] }) });
+    collisionGroup: 'players', collidesWith: ['players', 'ball', 'walls']
+}), { entity: new Entity({ name: 'Blue' }) });
 
 // bola
 const ball = scene.add(new Body({
-    shape: new Circle({ position: vec(canvas.width / 2, canvas.height / 2), radius: 12 }),
+    shape: new Circle({ position: vec(canvas.width / 2, canvas.height / 2), radius: 10 }),
     mass: 1, restitution: 0.9, friction: 0.9,
-    collisionGroup: 'ball', collidesWith: ['players', 'ball', 'walls', 'goals'],
-    canCollideWithTypes: ['circle', 'rect', 'triangle', 'line']
+    collisionGroup: 'ball', collidesWith: ['players', 'ball', 'walls']
 }), { entity: new Entity({ name: 'Bola', tags: ['scorable'] }) });
-
-const midLine = scene.add(new Body({
-    shape: new Line({ start: vec(canvas.width - 850, canvas.height / 2.3), end: vec(canvas.width - 120, canvas.height / 2.3), thickness: 6 }),
-    renderStyle: { fill: '#2e86ff', stroke: '#0b4a7f', strokeAlpha: 0.2 },
-    mass: 2, restitution: 0.3, friction: 0.99,
-    collisionGroup: 'walls', collidesWith: ['players', 'ball', 'walls'],
-    canCollideWithTypes: ['circle', 'rect', 'triangle', 'line']
-}));
 
 // input básico para mover o jogador
 const keys = new Set();
+
+// --- Controles Mobile ---
+const isMobile = /Mobi|Android/i.test(navigator.userAgent);
+
+if (isMobile) {
+    const joystick = document.querySelector('.joystick');
+    const stick = document.querySelector('.stick');
+    const kickBtn = document.getElementById('kick-btn');
+    let center = { x: 60, y: 60 };
+
+    joystick.addEventListener('touchmove', e => {
+        const touch = e.touches[0];
+        const rect = joystick.getBoundingClientRect();
+        const x = touch.clientX - rect.left;
+        const y = touch.clientY - rect.top;
+
+        const dx = x - center.x;
+        const dy = y - center.y;
+
+        const angle = Math.atan2(dy, dx);
+        const distance = Math.min(Math.sqrt(dx * dx + dy * dy), 40);
+
+        stick.style.transform = `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px)`;
+
+        // Limpa teclas antigas
+        keys.delete('ArrowUp');
+        keys.delete('ArrowDown');
+        keys.delete('ArrowLeft');
+        keys.delete('ArrowRight');
+
+        // Define direção
+        if (dy < -10) keys.add('ArrowUp');
+        if (dy > 10) keys.add('ArrowDown');
+        if (dx < -10) keys.add('ArrowLeft');
+        if (dx > 10) keys.add('ArrowRight');
+    });
+
+    joystick.addEventListener('touchend', () => {
+        stick.style.transform = `translate(0,0)`;
+        keys.delete('ArrowUp');
+        keys.delete('ArrowDown');
+        keys.delete('ArrowLeft');
+        keys.delete('ArrowRight');
+    });
+
+    kickBtn.addEventListener('touchstart', () => {
+        keys.add('x'); // simula chute
+    });
+
+    kickBtn.addEventListener('touchend', () => {
+        keys.delete('x');
+    });
+}
 
 window.addEventListener('keydown', (e) => {
     const zoomLevels = { '1': 1, '2': 1.5, '3': 2, '4': 2.5 };
@@ -210,13 +274,13 @@ function handleInput() {
             keys.delete('x');
         }
     }
-    
+
     else if (keys.has('z')) {
         if (player.shape.stroke !== '#fff') {
             player.shape.stroke = '#fff';
         }
     }
-    
+
     else if (player.shape.stroke !== playerOriginalStrokeColor) {
         player.shape.stroke = playerOriginalStrokeColor;
     }
